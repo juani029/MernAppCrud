@@ -39,7 +39,7 @@ export const updatePost = async (req, res) => {
     const updatedPost = await Post.findByIdAndUpdate(id, req.body, {
       new: true,
     });
-    return res.json({ updated: true, updatedPost });
+    return res.send(updatedPost);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });

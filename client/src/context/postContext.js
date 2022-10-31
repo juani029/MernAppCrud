@@ -3,6 +3,8 @@ import {
   getPostsRequests,
   createPostRequest,
   deletePostRequest,
+  getPostRequest,
+  updatePostRequest,
 } from "../api/posts";
 //creo el contexto
 const postContext = createContext();
@@ -22,8 +24,12 @@ export const PostProvider = ({ children }) => {
   };
 
   const createPost = async (post) => {
-    const res = await createPostRequest(post);
-    setPosts([...posts, res.data.newPost]);
+    try {
+      const res = await createPostRequest(post);
+      setPosts([...posts, res.data.newPost]);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const deletePost = async (id) => {
@@ -31,6 +37,16 @@ export const PostProvider = ({ children }) => {
     if (res.status === 204) {
       setPosts(posts.filter((post) => post._id !== id));
     }
+  };
+
+  const getPost = async (id) => {
+    const res = await getPostRequest(id);
+    return res.data;
+  };
+
+  const updatePost = async (id, post) => {
+    const res = await updatePostRequest(id, post);
+    setPosts(posts.map((post) => (post._id === id ? res.data : post)));
   };
 
   useEffect(() => {
@@ -45,6 +61,8 @@ export const PostProvider = ({ children }) => {
         getPosts,
         createPost,
         deletePost,
+        getPost,
+        updatePost,
       }}
     >
       {children}
