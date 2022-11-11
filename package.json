@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "nodemon server --watch server",
     "debug": "nodemon --inspect server --watch server",
-    "build:frontend": "npm run build --prefix client",
+    "build": "react-scripts build",
     "start": "node server"
   },
   "keywords": [],
