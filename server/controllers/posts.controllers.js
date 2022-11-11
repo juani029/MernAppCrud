@@ -25,6 +25,7 @@ export const createPost = async (req, res) => {
       };
     }
     const newPost = new Post({ title, description, image });
+    // console.log("soy post", newPost);
     await newPost.save();
     return res.json({ created: true, newPost });
   } catch (error) {
@@ -36,9 +37,31 @@ export const createPost = async (req, res) => {
 export const updatePost = async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedPost = await Post.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
+    // valido el req.files antes de hace el update para saber si quieren editar la imagen
+    if (req.files?.image) {
+      // console.log("soy req.files:", req.files.image.tempFilePath);
+      // let image = null;
+      // Encuentro al post, si tiene imagen la elimino de cloudinary
+      const post = await Post.findById(id);
+      !Object.entries(post.image).length &&
+        (await deleteImage(post.image.public_id));
+      // subo la imagen a cloudinary y me guardo la respuesta
+      const result = await uploadImage(req.files.image.tempFilePath);
+      // console.log("soy result:", result);
+      await fs.remove(req.files.image.tempFilePath);
+      // agrego la nueva imagen a el req.body
+      req.body.image = {
+        url: result.secure_url,
+        public_id: result.public_id,
+      };
+    }
+    const updatedPost = await Post.findByIdAndUpdate(
+      id,
+      { $set: req.body },
+      {
+        new: true,
+      }
+    );
     return res.send(updatedPost);
   } catch (error) {
     console.error(error);
@@ -55,7 +78,7 @@ export const deletePost = async (req, res) => {
     }
     if (deletedPost.image.public_id) {
       await deleteImage(deletedPost.image.public_id);
-      console.log("Image from db deleted");
+      // console.log("Image from db deleted");
     }
     return res.status(204).json({ deleted: true });
   } catch (error) {
