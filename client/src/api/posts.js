@@ -19,5 +19,14 @@ export const deletePostRequest = async (id) =>
 
 export const getPostRequest = async (id) => await axios.get(`/posts/${id}`);
 
-export const updatePostRequest = async (id, post) =>
-  await axios.put(`/posts/${id}`, post);
+export const updatePostRequest = async (id, newPostFields) => {
+  const form = new FormData();
+  for (const key in newPostFields) {
+    form.append(key, newPostFields[key]);
+  }
+  return await axios.put(`/posts/${id}`, form, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};

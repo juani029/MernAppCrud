@@ -12,16 +12,20 @@ const postContext = createContext();
 // creo un hook que ejecute el useContext el cual devuelve el state posts y la funcion setPosts y lo exporto para que pueda ser utilizado en cualquier componente
 export const usePosts = () => {
   const context = useContext(postContext);
+  if (!context) throw new Error("Post Provider is missing");
   return context;
 };
 
 export const PostProvider = ({ children }) => {
   const [posts, setPosts] = useState([]);
 
-  const getPosts = async () => {
-    const res = await getPostsRequests();
-    setPosts(res.data);
-  };
+  // genero un efecto para cargar los posts y que funcione como un proveedor para todos los los componentes hijos, asi cualquier pagina que este envuelta por el provider podra acceder a estos
+  useEffect(() => {
+    (async () => {
+      const res = await getPostsRequests();
+      setPosts(res.data);
+    })();
+  }, []);
 
   const createPost = async (post) => {
     try {
@@ -40,25 +44,27 @@ export const PostProvider = ({ children }) => {
   };
 
   const getPost = async (id) => {
-    const res = await getPostRequest(id);
-    return res.data;
+    try {
+      const res = await getPostRequest(id);
+      return res.data;
+    } catch (error) {}
   };
 
   const updatePost = async (id, post) => {
-    const res = await updatePostRequest(id, post);
-    setPosts(posts.map((post) => (post._id === id ? res.data : post)));
+    try {
+      const res = await updatePostRequest(id, post);
+      // console.log(res);
+      setPosts(posts.map((post) => (post._id === id ? res.data : post)));
+    } catch (error) {
+      console.error(error);
+    }
   };
-
-  useEffect(() => {
-    getPosts();
-  }, []);
 
   return (
     // le paso las funciones o valores que quiero compartir a los hijos mediante el context
     <postContext.Provider
       value={{
         posts,
-        getPosts,
         createPost,
         deletePost,
         getPost,

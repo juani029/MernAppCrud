@@ -10,9 +10,9 @@ export function HomePage() {
   const renderPost = () => {
     if (posts.length === 0)
       return (
-        <div className="flex flex-col  justify-center items-center ">
+        <div className="flex flex-col  justify-center items-center text-white">
           <VscEmptyWindow className="w-48 h-48 text-white" />
-          <h1 className="text-2xl">The are not posts</h1>
+          <h1 className="text-2xl text-white">The are not posts</h1>
         </div>
       );
 
