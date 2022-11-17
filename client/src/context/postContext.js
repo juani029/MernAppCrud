@@ -53,8 +53,7 @@ export const PostProvider = ({ children }) => {
   const updatePost = async (id, post) => {
     try {
       const res = await updatePostRequest(id, post);
-      // console.log(res);
-      setPosts(posts.map((post) => (post._id === id ? res.data : post)));
+      setPosts(posts.map((post) => (post._id === id ? res.data.post : post)));
     } catch (error) {
       console.error(error);
     }

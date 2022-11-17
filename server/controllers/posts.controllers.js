@@ -37,32 +37,32 @@ export const createPost = async (req, res) => {
 export const updatePost = async (req, res) => {
   try {
     const { id } = req.params;
+    const { title, description } = req.body;
+    const post = await Post.findById(id);
+    let imageBody = null;
     // valido el req.files antes de hace el update para saber si quieren editar la imagen
     if (req.files?.image) {
-      // console.log("soy req.files:", req.files.image.tempFilePath);
-      // let image = null;
-      // Encuentro al post, si tiene imagen la elimino de cloudinary
-      const post = await Post.findById(id);
+      // Si el post contiene imagen la elimino de cloudinary
       !Object.entries(post.image).length &&
         (await deleteImage(post.image.public_id));
       // subo la imagen a cloudinary y me guardo la respuesta
       const result = await uploadImage(req.files.image.tempFilePath);
-      // console.log("soy result:", result);
       await fs.remove(req.files.image.tempFilePath);
       // agrego la nueva imagen a el req.body
-      req.body.image = {
+      imageBody = {
         url: result.secure_url,
         public_id: result.public_id,
       };
+      post.image = imageBody;
+      post.title = title;
+      post.description = description;
+      await post.save();
+      return res.json({ msg: "post updated", post });
     }
-    const updatedPost = await Post.findByIdAndUpdate(
-      id,
-      { $set: req.body },
-      {
-        new: true,
-      }
-    );
-    return res.send(updatedPost);
+    post.title = title;
+    post.description = description;
+    await post.save();
+    return res.json({ msg: "post updated", post });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });
